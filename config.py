@@ -8,7 +8,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # Environment
-    ENVIRONMENT: str = "development"
+    ENVIRONMENT: str = "production"  # Options: development, staging, production
     
     # Node.js backend URL
     NODE_BACKEND_URL: str = "https://just-solace-production.up.railway.app"

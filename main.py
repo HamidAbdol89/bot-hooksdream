@@ -69,7 +69,7 @@ async def Lifecycle(app: FastAPI):
         print("📝 Bot posting scheduler started")
         
         # Start bot interaction scheduler
-        asyncio.create_task(bot_interaction_service.start_scheduler())
+        asyncio.create_task(bot_interaction_service.start_interaction_scheduler())
         print("💬 Bot interaction scheduler started")
     
     print("Python Backend ready!")
@@ -80,8 +80,7 @@ async def Lifecycle(app: FastAPI):
     print("🛑 Shutting down Python Backend...")
     if bot_service:
         await bot_service.stop_scheduler()
-    if bot_interaction_service:
-        await bot_interaction_service.stop_scheduler()
+    # Note: bot_interaction_service doesn't have stop_scheduler method
 
 # Create FastAPI app
 app = FastAPI(
