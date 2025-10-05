@@ -19,6 +19,7 @@ from services.multimedia_expansion_service import multimedia_expansion_service
 from services.engagement_strategy_service import engagement_strategy_service
 from services.unsplash_service import UnsplashService
 from services.bot_accounts import get_topics_for_islamic_bot
+from services.event_aware_service import event_aware_service
 
 # Create dummy health monitoring service to avoid import errors
 class DummyHealthMonitoringService:

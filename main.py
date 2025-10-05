@@ -23,10 +23,34 @@ from config import settings, get_host, get_port
 # Load environment variables
 load_dotenv()
 
+async def keep_alive_task():
+    """Keep the service alive by making periodic requests to prevent Railway sleep"""
+    import httpx
+    
+    while True:
+        try:
+            # Wait 8 minutes between keep-alive pings (Railway sleeps after 10 min)
+            await asyncio.sleep(480)  # 8 minutes
+            
+            # Ping self to prevent sleep
+            port = get_port()
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                try:
+                    response = await client.get(f"http://localhost:{port}/health")
+                    if response.status_code == 200:
+                        print("💓 Keep-alive ping successful")
+                    else:
+                        print(f"⚠️ Keep-alive ping returned {response.status_code}")
+                except Exception as ping_error:
+                    print(f"⚠️ Keep-alive ping failed: {ping_error}")
+                    
+        except Exception as e:
+            print(f"❌ Keep-alive task error: {e}")
+            await asyncio.sleep(60)  # Wait 1 minute on error
+
 # Global services
 unsplash_service = None
 hybrid_image_service = None
-bot_service = None
 bot_interaction_service = None
 
 @asynccontextmanager
@@ -37,7 +61,6 @@ async def Lifecycle(app: FastAPI):
     # Startup
     print("🚀 Starting HooksDream Python Backend...")
     print(f"📊 Environment: {settings.ENVIRONMENT}")
-    print(f"🌐 Server will run on {get_host()}:{get_port()}")
     print(f"🔗 Backend URL: {settings.NODE_BACKEND_URL}")
     
     # Initialize services
@@ -71,6 +94,10 @@ async def Lifecycle(app: FastAPI):
         # Start bot interaction scheduler
         asyncio.create_task(bot_interaction_service.start_interaction_scheduler())
         print("💬 Bot interaction scheduler started")
+        
+        # Start keep-alive task to prevent Railway sleep
+        asyncio.create_task(keep_alive_task())
+        print("💓 Keep-alive service started")
     
     print("Python Backend ready!")
     
