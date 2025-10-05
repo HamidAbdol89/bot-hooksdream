@@ -6,7 +6,8 @@ Endpoints for fetching images from Unsplash
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Dict, Optional
-import main
+# Global service references (will be set by main.py)
+unsplash_service = None
 
 router = APIRouter()
 
@@ -33,7 +34,7 @@ async def get_random_photos(
     query: Optional[str] = Query(None, description="Search query for specific topics")
 ):
     """Get random photos from Unsplash"""
-    unsplash_service = main.unsplash_service
+    global unsplash_service
     
     if not unsplash_service:
         raise HTTPException(status_code=503, detail="Unsplash service not initialized")
@@ -56,7 +57,7 @@ async def search_photos(
     page: int = Query(1, ge=1, description="Page number")
 ):
     """Search for photos on Unsplash"""
-    unsplash_service = main.unsplash_service
+    global unsplash_service
     
     if not unsplash_service:
         raise HTTPException(status_code=503, detail="Unsplash service not initialized")
@@ -76,7 +77,7 @@ async def search_photos(
 @router.get("/topics")
 async def get_trending_topics():
     """Get trending topics for diverse content"""
-    unsplash_service = main.unsplash_service
+    global unsplash_service
     
     if not unsplash_service:
         raise HTTPException(status_code=503, detail="Unsplash service not initialized")
@@ -91,7 +92,7 @@ async def get_trending_topics():
 @router.post("/download/{photo_id}")
 async def download_photo(photo_id: str):
     """Trigger download tracking for a photo (required by Unsplash API)"""
-    unsplash_service = main.unsplash_service
+    global unsplash_service
     
     if not unsplash_service:
         raise HTTPException(status_code=503, detail="Unsplash service not initialized")
@@ -110,7 +111,7 @@ async def download_photo(photo_id: str):
 @router.get("/stats")
 async def get_unsplash_stats():
     """Get Unsplash service statistics"""
-    unsplash_service = main.unsplash_service
+    global unsplash_service
     
     if not unsplash_service:
         raise HTTPException(status_code=503, detail="Unsplash service not initialized")

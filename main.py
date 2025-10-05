@@ -85,6 +85,16 @@ async def Lifecycle(app: FastAPI):
     smart_avatar_service.image_service = hybrid_image_service
     print("👤 Smart avatar service initialized")
     
+    # Set global variables for routers
+    import routers.bot_router as bot_router_module
+    import routers.unsplash_router as unsplash_router_module
+    
+    bot_router_module.bot_service = bot_service
+    bot_router_module.hybrid_image_service = hybrid_image_service
+    bot_router_module.unsplash_service = unsplash_service
+    
+    unsplash_router_module.unsplash_service = unsplash_service
+    
     # Start bot services if enabled
     if settings.BOT_ENABLED:
         print("🚀 Starting automated bot services...")
