@@ -41,6 +41,11 @@ class ScheduleTrackerService:
                     "last_post_dates": {},  # {"2025-10-06": ["09:00", "15:00"]}
                     "total_posts": 0,
                     "last_updated": None
+                },
+                "jay_soundo_photography": {
+                    "last_post_dates": {},  # {"2025-10-06": ["08:00", "14:00"]}
+                    "total_posts": 0,
+                    "last_updated": None
                 }
             }
             with open(self.data_file, 'w') as f:
@@ -233,6 +238,11 @@ def get_schedule_stats(bot_username: str = "marcin_frames_art") -> Dict:
 def is_posting_time() -> bool:
     """Check if current time is posting time"""
     return schedule_tracker.is_posting_time()
+
+def is_posting_time_custom(current_time: datetime, posting_times: List[str]) -> bool:
+    """Check if current time matches any of the custom posting times"""
+    current_time_str = current_time.strftime('%H:%M')
+    return current_time_str in posting_times
 
 def get_vietnam_time() -> datetime:
     """Get current Vietnam time"""
