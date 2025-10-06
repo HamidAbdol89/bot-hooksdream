@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 from services.unsplash_service import UnsplashService
 from services.bot_service import BotService
+from services.jay_soundo_bot_service import JaySoundoBotService
 from routers import bot_router
 from config import settings, get_host, get_port
 
@@ -47,11 +48,12 @@ async def keep_alive_task():
 # Global services
 unsplash_service = None
 bot_service = None
+jay_soundo_bot_service = None
 
 @asynccontextmanager
 async def Lifecycle(app: FastAPI):
     """Application Lifecycle management"""
-    global unsplash_service, bot_service
+    global unsplash_service, bot_service, jay_soundo_bot_service
     
     # Startup
     print("🚀 Starting HooksDream Python Backend...")
@@ -63,19 +65,26 @@ async def Lifecycle(app: FastAPI):
     unsplash_service = UnsplashService()
     print("✅ Unsplash service initialized")
     
-    # Initialize bot service for Marcin
+    # Initialize bot services
     bot_service = BotService()
     print("🤖 Marcin bot service initialized")
+    
+    jay_soundo_bot_service = JaySoundoBotService()
+    print("📸 Jay Soundo bot service initialized")
     
     # Set global variables for routers
     import routers.bot_router as bot_router_module
     bot_router_module.bot_service = bot_service
+    bot_router_module.jay_soundo_bot_service = jay_soundo_bot_service
     
     # Start bot services if enabled
     if settings.BOT_ENABLED:
-        print("🚀 Starting Marcin bot scheduler...")
+        print("🚀 Starting bot schedulers...")
         asyncio.create_task(bot_service.start_scheduler())
         print("📝 Marcin bot scheduler started")
+        
+        asyncio.create_task(jay_soundo_bot_service.start_scheduler())
+        print("📸 Jay Soundo bot scheduler started")
         
         # Start keep-alive task to prevent Railway sleep
         asyncio.create_task(keep_alive_task())
@@ -118,22 +127,8 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint to prevent Railway sleep"""
-    global bot_service, unsplash_service
-    
-    bot_status = "running" if bot_service and bot_service.is_running else "stopped"
-    
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "marcin_bot": bot_status,
-        "services": {
-            "unsplash": "available" if unsplash_service else "unavailable",
-            "bot_scheduler": bot_status,
-            "schedule_tracker": "active",
-            "photo_tracker": "active"
-        }
-    }
+    """Simple health check endpoint for Railway"""
+    return {"status": "ok", "service": "marcin-bot"}
 
 # For Vercel deployment
 app.mount_path = ""

@@ -12,6 +12,7 @@ from config import settings
 
 # Global service references (will be set by main.py)
 bot_service = None
+jay_soundo_bot_service = None
 
 router = APIRouter()
 
@@ -92,6 +93,74 @@ async def create_single_post(theme: str = "random"):
         raise HTTPException(status_code=500, detail=f"Error creating post: {str(e)}")
 
 # Removed run-now endpoint to prevent spam and maintain scheduled posting only
+
+# Jay Soundo Bot Endpoints
+@router.get("/jay-soundo/stats")
+async def get_jay_soundo_stats():
+    """Get Jay Soundo bot statistics and status"""
+    global jay_soundo_bot_service
+    
+    if not jay_soundo_bot_service:
+        raise HTTPException(status_code=503, detail="Jay Soundo bot service not initialized")
+    
+    try:
+        stats = jay_soundo_bot_service.get_bot_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting Jay Soundo stats: {str(e)}")
+
+@router.post("/jay-soundo/create-post")
+async def create_jay_soundo_post(theme: str = "random"):
+    """Create a single Jay Soundo photography post manually"""
+    global jay_soundo_bot_service
+    
+    if not jay_soundo_bot_service:
+        raise HTTPException(status_code=503, detail="Jay Soundo bot service not initialized")
+    
+    try:
+        result = await jay_soundo_bot_service.create_manual_post(theme)
+        
+        if result["success"]:
+            return {
+                "message": result["message"],
+                "photo_id": result.get("photo_id"),
+                "photographer": result.get("photographer"),
+                "likes": result.get("likes"),
+                "theme": theme
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result["error"])
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating Jay Soundo post: {str(e)}")
+
+@router.post("/jay-soundo/start")
+async def start_jay_soundo_scheduler():
+    """Start Jay Soundo bot scheduler"""
+    global jay_soundo_bot_service
+    
+    if not jay_soundo_bot_service:
+        raise HTTPException(status_code=503, detail="Jay Soundo bot service not initialized")
+    
+    if jay_soundo_bot_service.is_running:
+        return {"message": "Jay Soundo bot scheduler is already running", "status": "running"}
+    
+    await jay_soundo_bot_service.start_scheduler()
+    return {"message": "Jay Soundo bot scheduler started successfully", "status": "running"}
+
+@router.post("/jay-soundo/stop")
+async def stop_jay_soundo_scheduler():
+    """Stop Jay Soundo bot scheduler"""
+    global jay_soundo_bot_service
+    
+    if not jay_soundo_bot_service:
+        raise HTTPException(status_code=503, detail="Jay Soundo bot service not initialized")
+    
+    if not jay_soundo_bot_service.is_running:
+        return {"message": "Jay Soundo bot is not running", "status": "stopped"}
+    
+    await jay_soundo_bot_service.stop_scheduler()
+    return {"message": "Jay Soundo bot scheduler stopped successfully", "status": "stopped"}
 
 @router.get("/stats")
 async def get_bot_stats():
