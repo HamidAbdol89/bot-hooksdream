@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # Different settings for development vs production
     if settings.ENVIRONMENT == "production":
         uvicorn.run(
-            "app:app",
+            "main:app",
             host=host,
             port=port,
             reload=False,  # No reload in production
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         )
     else:
         uvicorn.run(
-            "app:app",
+            "main:app",
             host=host,
             port=port,
             reload=True,   # Hot reload in development
