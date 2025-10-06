@@ -128,7 +128,28 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Simple health check endpoint for Railway"""
-    return {"status": "ok", "service": "marcin-bot"}
+    return {"status": "ok", "service": "dual-bots"}
+
+@app.get("/bots-status")
+async def bots_status():
+    """Get status of both bots"""
+    global bot_service, jay_soundo_bot_service
+    
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "marcin_bot": {
+            "running": bot_service.is_running if bot_service else False,
+            "service": "initialized" if bot_service else "not_initialized"
+        },
+        "jay_soundo_bot": {
+            "running": jay_soundo_bot_service.is_running if jay_soundo_bot_service else False,
+            "service": "initialized" if jay_soundo_bot_service else "not_initialized"
+        },
+        "total_active_bots": sum([
+            1 if bot_service and bot_service.is_running else 0,
+            1 if jay_soundo_bot_service and jay_soundo_bot_service.is_running else 0
+        ])
+    }
 
 # For Vercel deployment
 app.mount_path = ""
